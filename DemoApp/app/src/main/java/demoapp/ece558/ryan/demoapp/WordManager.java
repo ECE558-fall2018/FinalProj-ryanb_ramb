@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
+
+
 public class WordManager {
 
     private static final String TAG = "WordManager";
@@ -14,6 +17,10 @@ public class WordManager {
     private static WordManager sWordManager;
     private Context mContext;
     private List<Word> mWords;
+
+    private String info[] = new String[4];
+
+
 
     private static final WordManager ourInstance = new WordManager();
 
@@ -25,6 +32,10 @@ public class WordManager {
     // private constructor
     private WordManager() {
         mWords = new ArrayList<>();
+        info[0] = "Party Light";
+        info[1]=  "Home Light";
+        info[2]=  "Game Light";
+        info[3]=  "Happy Light";
         generateList();
     }
 
@@ -41,10 +52,21 @@ public class WordManager {
     // generate a dummy list for the recyclerview
     private void generateList() {
 
-        for (int i = 0; i < 24; i++) {
-            Word word = new Word("word test " + i);
-            mWords.add(word);
-        }
+        info[0] = "Party Light";
+        info[1]=  "Home Light";
+        info[2]=  "Game Light";
+        info[3]=  "Happy Light";
+
+        //for (int i = 0; i < 4; i++) {
+            Word word0 = new Word(info[0]);
+            Word word1 = new Word(info[1]);
+            Word word2 = new Word(info[2]);
+            Word word3 = new Word(info[3]);
+            mWords.add(word0);
+            mWords.add(word1);
+            mWords.add(word2);
+            mWords.add(word3);
+        //}
 
         Log.d(TAG, "Generated list.");
     }
@@ -63,5 +85,13 @@ public class WordManager {
 
     public int getPos(UUID id) {
         return mWords.indexOf(getWord(id));
+    }
+
+    public void setInfo(String[] info) {
+        this.info = info;
+    }
+
+    public String[] getInfo() {
+        return info;
     }
 }

@@ -51,30 +51,66 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().hide();
+
         setContentView(R.layout.activity_main);
+        getSupportActionBar().hide();
 
-        // Start the fragment manager and begin the fragment transaction
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
+        if (findViewById(R.id.portrait)!=null) {
 
-        // Add the top fragment with the recycler view
-        Fragment wordFragment = fm.findFragmentById(R.id.fragment_container_top);
-        if (wordFragment == null) {
-            wordFragment = new WordListFragment();
-            ft.add(R.id.fragment_container_top, wordFragment);
-            Log.d(TAG, "Creating new wordlist fragment.");
+            // Start the fragment manager and begin the fragment transaction
+            FragmentManager fm = getSupportFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+
+            // Add the top fragment with the recycler view
+            Fragment wordFragment = fm.findFragmentById(R.id.fragment_container_top);
+            if (wordFragment == null) {
+                wordFragment = new WordListFragment();
+                ft.add(R.id.fragment_container_top, wordFragment);
+                Log.d(TAG, "Creating new wordlist fragment.");
+
+                // Add the bottom fragment with the control buttons
+                Fragment controlFragment = fm.findFragmentById(R.id.fragment_container_bottom);
+                if (controlFragment == null) {
+                    controlFragment = new ControlFragment();
+                    ft.add(R.id.fragment_container_bottom, controlFragment);
+                }
+
+                Log.d(TAG, "Committing new fragment.");
+                ft.commit();
+
+            }
+       }
+
+        if(findViewById(R.id.landscape)!=null) {
+
+            // Start the fragment manager and begin the fragment transaction
+            FragmentManager fmLand = this.getSupportFragmentManager();
+            FragmentTransaction ftLand = fmLand.beginTransaction();
+
+            // Add the top fragment with the recycler view
+            Fragment wordFragmentLand = fmLand.findFragmentById(R.id.fragment_container_top);
+            if (wordFragmentLand == null) {
+                wordFragmentLand = new WordListFragment();
+                ftLand.add(R.id.fragment_container_top, wordFragmentLand);
+                //ftLand.show(fmLand.findFragmentById(R.id.fragment_container_top));
+                Log.d(TAG, "Creating new wordlist fragment.");
+
+                // Add the bottom fragment with the control buttons
+                Fragment controlFragment = fmLand.findFragmentById(R.id.fragment_container_bottom);
+                if (controlFragment == null) {
+                    controlFragment = new ControlFragment();
+                    ftLand.add(R.id.fragment_container_bottom, controlFragment);
+                }
+
+                Log.d(TAG, "Committing new fragment.");
+                ftLand.commit();
+
+            }
         }
 
-        // Add the bottom fragment with the control buttons
-        Fragment controlFragment = fm.findFragmentById(R.id.fragment_container_bottom);
-        if (controlFragment == null) {
-            controlFragment = new ControlFragment();
-            ft.add(R.id.fragment_container_bottom, controlFragment);
-        }
 
-        Log.d(TAG, "Committing new fragment.");
-        ft.commit();
+
+
     }
 
     // Method to abstract away the fragment replacement process when switching from the wordlist to

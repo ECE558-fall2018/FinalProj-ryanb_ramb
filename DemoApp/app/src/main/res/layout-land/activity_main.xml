@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:id="@+id/landscape"
     android:layout_height="match_parent"
-    android:id="@+id/portrait"
     tools:context=".MainActivity">
 
     <FrameLayout
@@ -19,7 +19,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/fragment_container_bottom"
         android:layout_width="match_parent"
-        android:layout_height="142dp"
+        android:layout_height="100dp"
         android:background="#EFEFEF"
         app:layout_constraintBottom_toBottomOf="parent">
     </FrameLayout>

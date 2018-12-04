@@ -17,6 +17,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+
 import java.util.UUID;
 
 import static android.content.ContentValues.TAG;
@@ -35,6 +37,8 @@ public class WordFragment extends Fragment {
     private int mBlueVal;
     private View mSelectedColorBox;
     private int mSelectedBoxIndex;
+
+    private DatabaseReference databaseReference;
 
     private int wordPosition;
 
@@ -187,6 +191,8 @@ public class WordFragment extends Fragment {
 
                 // notify database of the progress change
                 //mDatabaseRef.child(PWM_RED).setValue(mRedProgress);
+                //Here modify for the database child
+                //databaseReference.child(mWord.getWord()).child("colors").child(ms).setValue(convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
             }
         });
     }
@@ -219,7 +225,7 @@ public class WordFragment extends Fragment {
                 mWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
 
                 // notify database of the progress change
-                //mDatabaseRef.child(PWM_GREEN).setValue(mGreenProgress);
+                //Update the database
             }
         });
     }
@@ -254,6 +260,8 @@ public class WordFragment extends Fragment {
 
                 // notify the database
                 //mDatabaseRef.child(PWM_BLUE).setValue(mBlueProgress);
+                //Update the database
+
             }
         });
     }

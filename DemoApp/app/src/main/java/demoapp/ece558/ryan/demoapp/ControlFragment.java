@@ -10,13 +10,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
@@ -24,13 +30,16 @@ import static android.app.Activity.RESULT_OK;
 public class ControlFragment extends Fragment {
 
     private static final int REQ_CODE_SPEECH_INPUT = 1;
-    private static final int REQ_CODE_SPEECH_RESULT = 2;
 
     private String mWordFromSpeech;
+    private FragmentActivity mActivity;
+    private DatabaseReference databaseReference;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mActivity = getActivity();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
 
     }
 
@@ -97,8 +106,20 @@ public class ControlFragment extends Fragment {
         mWordFromSpeech = getDecodedSpeech(resultCode, data);
 
         // store the word in the view model to update the recycler view fragment
-        WordViewModel model = ViewModelProviders.of(getActivity()).get(WordViewModel.class);
+        Log.d("Before","Getactivity");
+        WordViewModel model = ViewModelProviders.of(mActivity).get(WordViewModel.class);
         model.setWordFromText(mWordFromSpeech);
+
+        //add.setWord(mWordFromSpeech);
+        List <Integer> Color = new ArrayList<>();
+        for(int i=0;i<8;++i)
+        {
+            Color.add(0);
+        }
+
+        //Word add = new Word(mWordFromSpeech,Color);
+
+       // databaseReference.child(mWordFromSpeech).setValue(add);
 
         // Add word to database and to the top of the recycler view
 
@@ -107,7 +128,6 @@ public class ControlFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
 
     }
 

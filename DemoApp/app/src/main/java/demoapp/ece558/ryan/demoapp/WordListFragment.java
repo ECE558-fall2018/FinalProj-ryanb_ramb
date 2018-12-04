@@ -18,6 +18,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import org.w3c.dom.Text;
 
 import java.util.List;
@@ -32,6 +35,8 @@ public class WordListFragment extends Fragment {
     private static int INTERVAL_CHECK_WORD_CHANGE = 500;
 
     private Handler mPollHandler;
+
+    private DatabaseReference firebase;
 
     // data member for the fragment recycler view
     private RecyclerView mWordRecyclerView;
@@ -63,6 +68,7 @@ public class WordListFragment extends Fragment {
 
         mPollHandler = new Handler();
         mPollHandler.postDelayed(mPollWordAdd, INTERVAL_CHECK_WORD_CHANGE);
+        firebase = FirebaseDatabase.getInstance().getReference();
     }
 
     // enable the fragment to use the layout file and to find the RecyclerView in the layout
@@ -147,8 +153,12 @@ public class WordListFragment extends Fragment {
             public void onClick (View view) {
                 // get the selected adapter position and the UUID of the word at that position
                 // then get the word with the matching UUID from the WordManager
+                int color = 0;
                 Word word = mWordManager.getWord(mWords.get(getAdapterPosition()).getId());
                 // invoke the callback method that an onClickView has happened and pass the word
+
+                Word addWord = new Word(word.getWord(),color);
+                firebase.child(word.getWord()).setValue(addWord);
                 mCallback.onViewSelected(mWords.indexOf(word));
             }
 
