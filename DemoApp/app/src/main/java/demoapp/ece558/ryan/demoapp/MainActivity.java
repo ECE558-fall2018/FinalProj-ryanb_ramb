@@ -141,4 +141,10 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
 
         ft.commit();
     }
+    
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+        //finish();
+    }
 }
