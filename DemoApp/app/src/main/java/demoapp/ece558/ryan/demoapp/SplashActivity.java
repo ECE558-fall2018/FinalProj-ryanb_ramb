@@ -25,11 +25,13 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-
         // start an asyncronous task to get the word list from the database
         ReadFromDatabase readTask = new ReadFromDatabase();
         readTask.execute();
     }
+
+
+
 
     // <Params, Progress, Result>
     private class ReadFromDatabase extends AsyncTask<Void, Void, List<Word>> {
@@ -58,10 +60,13 @@ public class SplashActivity extends AppCompatActivity {
             return null;
         }
 
+
         @Override
         protected void onProgressUpdate(Void... values) {
 
         }
+
+
 
 
         @Override
@@ -80,41 +85,4 @@ public class SplashActivity extends AppCompatActivity {
             }
         }
     }
-
-
-    Runnable databaseReader = new Runnable() {
-        @Override
-        public void run() {
-            int attempts = 0;
-            mWordManager = WordManager.getInstance();
-
-            mWordList = null;
-            while (mWordList == null && attempts < 5) {
-                // see if the wordlist has been retrieved from the database
-                mWordList = mDatabaseManager.getWordList();
-
-                try {
-                    Thread.sleep(250);
-                }
-                catch (InterruptedException ie) {
-                    ie.printStackTrace();
-                }
-
-                ++attempts;
-            }
-
-            // if we got the word list from the database,
-            if (mWordList != null) {
-                //  write it to the word manager
-                mWordManager.setWordListFromDatabase(mWordList);
-                //  go to main activity
-                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
-            else {
-                Toast toast = makeText(SplashActivity.this, "Unable to read from database.", Toast.LENGTH_SHORT);
-            }
-
-        }
-    };
 }
