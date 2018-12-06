@@ -104,7 +104,8 @@ public class WordListFragment extends Fragment {
             if (wordFromText != null){
                 //Toast.makeText(getActivity(), "New word! " + wordFromText, Toast.LENGTH_SHORT).show();
                 //mWordManager.addWord(0, wordFromText);
-                mAdapter.notifyItemInserted(0);
+                //mAdapter.notifyItemInserted(0);
+                mWordManager.addWord(0, wordFromText);
             }
             mPollHandler.postDelayed(mPollWordAdd, INTERVAL_CHECK_WORD_CHANGE);
         }
