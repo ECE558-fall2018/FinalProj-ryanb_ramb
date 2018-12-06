@@ -2,32 +2,20 @@ package demoapp.ece558.ryan.demoapp;
 
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
-import java.util.UUID;
-
-import static demoapp.ece558.ryan.demoapp.MainActivity.NUM_COLORS;
-import static demoapp.ece558.ryan.demoapp.MainActivity.NUM_ROWS;
 
 public class WordListFragment extends Fragment {
 
@@ -36,7 +24,7 @@ public class WordListFragment extends Fragment {
 
     private Handler mPollHandler;
 
-    private DatabaseReference firebase;
+    private DatabaseReference mDatabaseReference;
 
     // data member for the fragment recycler view
     private RecyclerView mWordRecyclerView;
@@ -61,6 +49,11 @@ public class WordListFragment extends Fragment {
         void onViewSelected(int wordPosition);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mPollHandler.removeCallbacks(mPollWordAdd);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,7 +61,7 @@ public class WordListFragment extends Fragment {
 
         mPollHandler = new Handler();
         mPollHandler.postDelayed(mPollWordAdd, INTERVAL_CHECK_WORD_CHANGE);
-        firebase = FirebaseDatabase.getInstance().getReference();
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
     }
 
     // enable the fragment to use the layout file and to find the RecyclerView in the layout
@@ -91,7 +84,7 @@ public class WordListFragment extends Fragment {
         // get the instance of word manager and pass the list of words to the adapter
         mWordManager = WordManager.getInstance();
         // create the word adapter and link it to the recycler view
-        mAdapter = new WordAdapter(mWordManager.getWords());
+        mAdapter = new WordAdapter(mWordManager.getWordList());
         mWordRecyclerView.setAdapter(mAdapter);
 
         return view;
@@ -104,11 +97,14 @@ public class WordListFragment extends Fragment {
             String wordFromText;
             // store the word in the view model to update the recycler view fragment
             WordViewModel model = ViewModelProviders.of(getActivity()).get(WordViewModel.class);
+            if (model == null)
+                return;
+
             wordFromText = model.getWordFromText();
             if (wordFromText != null){
                 //Toast.makeText(getActivity(), "New word! " + wordFromText, Toast.LENGTH_SHORT).show();
-                mWordManager.addWord(1, wordFromText);
-                mAdapter.notifyItemInserted(1);
+                //mWordManager.addWord(0, wordFromText);
+                mAdapter.notifyItemInserted(0);
             }
             mPollHandler.postDelayed(mPollWordAdd, INTERVAL_CHECK_WORD_CHANGE);
         }
@@ -122,7 +118,8 @@ public class WordListFragment extends Fragment {
 
         // Constructor for the Adapter
         public WordAdapter(List<Word> words) {
-            mWords = words;
+           mWords = mWordManager.getWordList();
+            //mWords = words;
         }
 
 
@@ -135,8 +132,6 @@ public class WordListFragment extends Fragment {
 
             // Each ViewHolder is made of a text string for the word and boxes for the colors
             public TextView mTextView;
-            public View mColorView [][];
-            public View mWordView;
 
             // Constructor for the RecyclerView ViewHolder extension
             // Pass the ViewHolder instance of the view layout
@@ -144,7 +139,6 @@ public class WordListFragment extends Fragment {
                 super(v);
                 // we can deconstruct the view layout here
                 mTextView = (TextView) v.findViewById(R.id.word_title);
-
                 v.setOnClickListener(this);
             }
 
@@ -155,15 +149,11 @@ public class WordListFragment extends Fragment {
                 // then get the word with the matching UUID from the WordManager
                 int color = 0;
                 Word word = mWordManager.getWord(mWords.get(getAdapterPosition()).getId());
-                // invoke the callback method that an onClickView has happened and pass the word
 
-                Word addWord = new Word(word.getWord(),color);
-                firebase.child(word.getWord()).setValue(addWord);
+                // invoke the callback method that an onClickView has happened and pass the word back
                 mCallback.onViewSelected(mWords.indexOf(word));
             }
-
         }
-
 
         // Create new views (invoked by the layout manager)
         @Override
@@ -185,7 +175,17 @@ public class WordListFragment extends Fragment {
         // Return the size of your dataset (invoked by the layout manager)
         @Override
         public int getItemCount() {
-            return mWords.size();
+            return mWordManager.getWordList().size();
+            //return mWords.size();
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public void addItem(int position) {
+
         }
 
     }

@@ -1,11 +1,7 @@
 package demoapp.ece558.ryan.demoapp;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -15,14 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 
-import java.util.UUID;
-
 import static android.content.ContentValues.TAG;
-import static demoapp.ece558.ryan.demoapp.MainActivity.EXTRA_WORD_ID;
 
 public class WordFragment extends Fragment {
 
@@ -31,7 +23,7 @@ public class WordFragment extends Fragment {
     public static final String WORD_INDEX = "ece.558.projec4.word_index";
 
     private WordManager mWordManager;   // singleton that manages the known words
-    private Word mWord;                 // currently selected word
+    private Word mCurrentWord;                 // currently selected word
     private int mRedVal;
     private int mGreenVal;
     private int mBlueVal;
@@ -56,15 +48,16 @@ public class WordFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //mWord = new Word("test");
+        //mCurrentWord = new Word("test");
 
         //mWordManager = WordManager.getInstance();
 
         mColorListeners = new OnTouchListener[numColors];
 
         //UUID wordID = (UUID) getActivity().getIntent().getSerializableExtra(EXTRA_WORD_ID);
-        //mWord = mWordManager.getWord(wordID);
+        //mCurrentWord = mWordManager.getWord(wordID);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,10 +70,10 @@ public class WordFragment extends Fragment {
         }
 
         mWordManager = WordManager.getInstance();
-        mWord = mWordManager.getWord(wordPosition);
+        mCurrentWord = mWordManager.getWord(wordPosition);
         // Set the word text at the top of the screen
         TextView tv = view.findViewById(R.id.label_word);
-        tv.setText(mWord.getWord());
+        tv.setText(mCurrentWord.getWord());
 
         // Do initial setup of color box colors from stored values
         setColorBoxes(view);
@@ -107,38 +100,47 @@ public class WordFragment extends Fragment {
     }
 
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // save color information to the word manager
+        mWordManager.updateWord(mCurrentWord);
+    }
+
+
     private void setColorBoxes (View view) {
         int color;
 
-        color = mWord.getColor(0);
+        color = mCurrentWord.getColor(0);
         updateColorBox(view.findViewById(R.id.color_1),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
 
-        color = mWord.getColor(1);
+        color = mCurrentWord.getColor(1);
         updateColorBox(view.findViewById(R.id.color_2),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
 
-        color = mWord.getColor(2);
+        color = mCurrentWord.getColor(2);
         updateColorBox(view.findViewById(R.id.color_3),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
 
-        color = mWord.getColor(3);
+        color = mCurrentWord.getColor(3);
         updateColorBox(view.findViewById(R.id.color_4),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
 
-        color = mWord.getColor(4);
+        color = mCurrentWord.getColor(4);
         updateColorBox(view.findViewById(R.id.color_5),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
 
-        color = mWord.getColor(5);
+        color = mCurrentWord.getColor(5);
         updateColorBox(view.findViewById(R.id.color_6),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
 
-        color = mWord.getColor(6);
+        color = mCurrentWord.getColor(6);
         updateColorBox(view.findViewById(R.id.color_7),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
 
-        color = mWord.getColor(7);
+        color = mCurrentWord.getColor(7);
         updateColorBox(view.findViewById(R.id.color_8),
                 ((color >> 16) & 0xFF), ((color >> 8) & 0xFF), (color & 0xFF));
     }
@@ -187,12 +189,12 @@ public class WordFragment extends Fragment {
                 updateColorBox(mSelectedColorBox, mRedProgress, mGreenProgress, mBlueProgress);
 
                 // save the data to the word
-                mWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
+                mCurrentWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
 
                 // notify database of the progress change
                 //mDatabaseRef.child(PWM_RED).setValue(mRedProgress);
                 //Here modify for the database child
-                //databaseReference.child(mWord.getWord()).child("colors").child(ms).setValue(convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
+                //databaseReference.child(mCurrentWord.getWord()).child("colors").child(ms).setValue(convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
             }
         });
     }
@@ -222,10 +224,7 @@ public class WordFragment extends Fragment {
                 updateColorBox(mSelectedColorBox, mRedProgress, mGreenProgress, mBlueProgress);
 
                 // save the data to the word
-                mWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
-
-                // notify database of the progress change
-                //Update the database
+                mCurrentWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
             }
         });
     }
@@ -256,7 +255,7 @@ public class WordFragment extends Fragment {
                 updateColorBox(mSelectedColorBox, mRedProgress, mGreenProgress, mBlueProgress);
 
                 // save the data to the word
-                mWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
+                mCurrentWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
 
                 // notify the database
                 //mDatabaseRef.child(PWM_BLUE).setValue(mBlueProgress);

@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
 
 
 
-
     // RecyclerView Item Select
     // word list fragment is notifying that a word was clicked so we can change the fragments
     @Override
@@ -49,17 +48,27 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        // write to the database
+        DatabaseManager db = new DatabaseManager();
+        db.writeStateToDatabase();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
 
-        if (findViewById(R.id.portrait)!=null) {
+        if (findViewById(R.id.portrait) != null) {
 
             // Start the fragment manager and begin the fragment transaction
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
+            ft.setReorderingAllowed(true);
 
             // Add the top fragment with the recycler view
             Fragment wordFragment = fm.findFragmentById(R.id.fragment_container_top);
@@ -81,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
             }
        }
 
-        if(findViewById(R.id.landscape)!=null) {
+        if(findViewById(R.id.landscape) != null) {
 
             // Start the fragment manager and begin the fragment transaction
             FragmentManager fmLand = this.getSupportFragmentManager();
@@ -132,5 +141,4 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
 
         ft.commit();
     }
-
 }

@@ -69,25 +69,26 @@ public class ControlFragment extends Fragment {
     }
 
 
+    // Begin the speech-to-text process
     public void promptSpeechInput() {
         try {
             startActivityForResult(setIntentData(), REQ_CODE_SPEECH_INPUT);
         } catch (ActivityNotFoundException anfe) {
-            Toast.makeText(getActivity(), "Error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Error Recording Speech", Toast.LENGTH_SHORT).show();
             anfe.printStackTrace();
         }
     }
 
+    // Create the intent for the speech to text
     public Intent setIntentData () {
-
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say Something");
-
         return intent;
     }
 
+    // Get the String of the decoded speech from text-to-speech
     public String getDecodedSpeech(int resultCode, Intent data) {
 
         if (resultCode == RESULT_OK && data != null){
@@ -105,24 +106,27 @@ public class ControlFragment extends Fragment {
         // get the converted word from the speech activity intent
         mWordFromSpeech = getDecodedSpeech(resultCode, data);
 
+        // create new word
+        Word newWord = new Word(mWordFromSpeech);
+
+        // add the word to the word manager wordlist
+        WordManager mWordManager = WordManager.getInstance();
+        mWordManager.addWord(newWord);
+
+        // Add word to database
+        databaseReference = FirebaseDatabase.getInstance().getReference().child("words");
+        //databaseReference.push().setValue(mWordFromSpeech);
+        // add color child entry
+        //databaseReference = FirebaseDatabase.getInstance().getReference().child("words").child(mWordFromSpeech);
+        //databaseReference.push().setValue("colors");
+
+        DatabaseManager db = new DatabaseManager();
+        db.addWordToDataBase();
+
         // store the word in the view model to update the recycler view fragment
         Log.d("Before","Getactivity");
         WordViewModel model = ViewModelProviders.of(mActivity).get(WordViewModel.class);
         model.setWordFromText(mWordFromSpeech);
-
-        //add.setWord(mWordFromSpeech);
-        List <Integer> Color = new ArrayList<>();
-        for(int i=0;i<8;++i)
-        {
-            Color.add(0);
-        }
-
-        //Word add = new Word(mWordFromSpeech,Color);
-
-       // databaseReference.child(mWordFromSpeech).setValue(add);
-
-        // Add word to database and to the top of the recycler view
-
     }
 
     @Override
