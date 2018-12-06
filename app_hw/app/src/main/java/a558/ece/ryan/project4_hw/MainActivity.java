@@ -1,10 +1,17 @@
 package a558.ece.ryan.project4_hw;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 
 import com.google.android.things.pio.PeripheralManager;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends Activity {
 
@@ -12,16 +19,21 @@ public class MainActivity extends Activity {
     private final int RED = 0;
     private final int GREEN = 1;
     private final int BLUE = 2;
+    private static final int LED_TOGGLE_INTERVAL_MS = 500;
     private static final int UPDATE_INTERVAL_MS = 5000;
     private Handler mColorHandler;
 
     // Peripheral members
     private PeripheralManager mPeripheralManager;
+    GpioManager mPin14;
     Tlc5940 mTlc5940;
+    private String GPIO_PIN14 = "BCM14";
 
-    //private DatabaseReference mDatabaseReference;
+    private DatabaseManager mDatabaseManager;
+    private DatabaseReference mDatabaseReference;
     int mColorValues[][];
     int mColorIndex;
+    String mCurrentWord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,18 +46,47 @@ public class MainActivity extends Activity {
         // initialize peripheral mPeripheralManager and resources
         mPeripheralManager = PeripheralManager.getInstance();
         mTlc5940 = new Tlc5940(mPeripheralManager);
+        mPin14 = new GpioManager(mPeripheralManager, GPIO_PIN14);
 
         // initialize database connection
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        mDatabaseManager = new DatabaseManager();
+        setDatabaseListener();
 
         // initialize color values
-        setTestColors();
+        //setTestColors();
 
         // set handler for updating the colors on the Arduino
         mColorHandler = new Handler();
-        mColorHandler.post(UpdateColor);
+        //mColorHandler.post(UpdateColor);
 
     }
 
+    private void setDatabaseListener(){
+        mDatabaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // check if the play show flag was updated
+                mCurrentWord = dataSnapshot.child("flag_play_show").getValue(String.class);
+                if (mCurrentWord != "play_show") {
+                    readColorsFromDatabase(mCurrentWord);
+                    // reset the flag
+                    mDatabaseReference.child("flag_play_show").setValue("play_show");
+
+                    playLightShow();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void playLightShow() {
+        mColorHandler.post(UpdateColor);
+    }
 
     private Runnable UpdateColor = new Runnable() {
         @Override
@@ -96,7 +137,15 @@ public class MainActivity extends Activity {
     }
 
     // get the colors for the word from the database
-    private void getWordColors() {
+    private void readColorsFromDatabase(String currentWord) {
 
+        int [] rawColorValues = mDatabaseManager.getColorData(currentWord);
+
+        // convert the raw colors into RGB values
+        for (int i = 0; i < 8; ++i) {
+            mColorValues[i][RED] = Color.red(rawColorValues[i]);
+            mColorValues[i][GREEN] = Color.green(rawColorValues[i]);
+            mColorValues[i][BLUE] = Color.blue(rawColorValues[i]);
+        }
     }
 }
