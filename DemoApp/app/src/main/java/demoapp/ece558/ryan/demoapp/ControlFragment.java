@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -32,6 +33,7 @@ public class ControlFragment extends Fragment {
     private static final int REQ_CODE_SPEECH_INPUT = 1;
 
     private String mWordFromSpeech;
+    private TextToSpeech textToSpeech;
     private FragmentActivity mActivity;
     private DatabaseReference databaseReference;
 
@@ -41,7 +43,42 @@ public class ControlFragment extends Fragment {
         mActivity = getActivity();
         databaseReference = FirebaseDatabase.getInstance().getReference();
 
+        textToSpeech = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+
+                if(status == TextToSpeech.SUCCESS)
+                {
+                    int result = textToSpeech.setLanguage(Locale.ENGLISH);
+
+                    if(result==TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
+                    {
+                        Toast.makeText(getContext(),"This Language is not supported",Toast.LENGTH_SHORT).show();
+                    }
+
+                    else
+                    {
+                        //imageButton.setEnabled(true);
+                        textToSpeech.setPitch(0.8f);
+                        textToSpeech.setSpeechRate(0.9f);
+                        speak();
+                    }
+
+                }
+            }
+        });
+
+
     }
+
+    private void speak()
+    {
+        //String text = editText.getText().toString();
+        textToSpeech.speak(mWordFromSpeech,TextToSpeech.QUEUE_FLUSH,null,null);
+    }
+
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -106,12 +143,16 @@ public class ControlFragment extends Fragment {
         // get the converted word from the speech activity intent
         mWordFromSpeech = getDecodedSpeech(resultCode, data);
 
+        //textToSpeech.speak("I think I heard"+mWordFromSpeech,TextToSpeech.QUEUE_FLUSH,null,null);
+
         // create new word
         Word newWord = new Word(mWordFromSpeech);
 
         // add the word to the word manager wordlist
-        WordManager mWordManager = WordManager.getInstance();
-        mWordManager.addWord(newWord);
+        //WordManager mWordManager = new WordManager();//WordManager.getInstance();
+
+       // Log.d("WORDS","WORDS"+mWordManager.getWordList());
+        //mWordManager.addWord(newWord);
 
         // Add word to database
         databaseReference = FirebaseDatabase.getInstance().getReference().child("words");
