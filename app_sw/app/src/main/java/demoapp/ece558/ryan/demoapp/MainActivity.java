@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
     public static final String EXTRA_WORD_ID = "ece.558.final.project.word_id";
     public static final int NUM_COLORS = 8;
     public static final int NUM_ROWS = 10;
-    
+
 
     // RecyclerView Item Select
     // word list fragment is notifying that a word was clicked so we can change the fragments
