@@ -71,6 +71,7 @@ public class WordFragment extends Fragment {
 
         mWordManager = WordManager.getInstance();
         mCurrentWord = mWordManager.getWord(wordPosition);
+        mWordManager.setmCurrentWord(mCurrentWord);
         // Set the word text at the top of the screen
         TextView tv = view.findViewById(R.id.label_word);
         tv.setText(mCurrentWord.getWord());

@@ -36,12 +36,17 @@ public class ControlFragment extends Fragment {
     private TextToSpeech textToSpeech;
     private FragmentActivity mActivity;
     private DatabaseReference databaseReference;
+    private WordManager mWordManager;
+    private String mCurrentWord;
+    private DatabaseManager mDataBaseManager;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = getActivity();
         databaseReference = FirebaseDatabase.getInstance().getReference();
+        mDataBaseManager = new DatabaseManager();
 
         textToSpeech = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
             @Override
@@ -89,7 +94,22 @@ public class ControlFragment extends Fragment {
         ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity(), "Play show", Toast.LENGTH_SHORT).show();
+
+
+                mWordManager = WordManager.getInstance();
+                mCurrentWord = mWordManager.getCurrentWordText();
+                if(mCurrentWord == null)
+                {
+                    Toast.makeText(getActivity(), "Choose A word", Toast.LENGTH_SHORT).show();
+
+                }
+
+                else
+                {
+                    Toast.makeText(getActivity(), "Play show", Toast.LENGTH_SHORT).show();
+                    mDataBaseManager.writeStateToDatabase();
+                    mDataBaseManager.signalPlayShow(mCurrentWord);
+                }
             }
         });
 
@@ -143,7 +163,7 @@ public class ControlFragment extends Fragment {
         // get the converted word from the speech activity intent
         mWordFromSpeech = getDecodedSpeech(resultCode, data);
 
-        //textToSpeech.speak("I think I heard"+mWordFromSpeech,TextToSpeech.QUEUE_FLUSH,null,null);
+        textToSpeech.speak("I think I heard"+mWordFromSpeech,TextToSpeech.QUEUE_FLUSH,null,null);
 
         // create new word
         Word newWord = new Word(mWordFromSpeech);

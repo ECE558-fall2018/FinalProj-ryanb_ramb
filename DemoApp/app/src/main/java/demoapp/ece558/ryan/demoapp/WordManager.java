@@ -30,6 +30,7 @@ public class WordManager {
     private Context mContext;
     private List<Word> mWordList;
 
+    private Word mCurrentWord;
     private String info[] = new String[4];
 
     private DatabaseReference mDatabaseReference;
@@ -121,5 +122,26 @@ public class WordManager {
 
     public String[] getInfo() {
         return info;
+    }
+
+    public Word getmCurrentWord() {
+        return mCurrentWord;
+    }
+
+    public String getCurrentWordText()
+    {
+        if(mCurrentWord==null)
+        {
+            return null;
+        }
+        else
+        {
+            return mCurrentWord.getWord();
+        }
+    }
+
+    public void setmCurrentWord(Word word)
+    {
+        mCurrentWord = word;
     }
 }

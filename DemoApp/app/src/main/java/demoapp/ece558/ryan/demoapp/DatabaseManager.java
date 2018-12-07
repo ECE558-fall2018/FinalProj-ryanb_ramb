@@ -159,4 +159,12 @@ public class DatabaseManager {
         mDatabaseReference.setValue(wordMap);
     }
 
+    public void signalPlayShow(String word)
+    {
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        mDatabaseReference.child("flag_play_show").setValue(word);
+
+    }
+
 }
+

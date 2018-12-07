@@ -106,6 +106,7 @@ public class WordListFragment extends Fragment {
                 //mWordManager.addWord(0, wordFromText);
                 //mAdapter.notifyItemInserted(0);
                 mWordManager.addWord(0, wordFromText);
+                mAdapter.notifyItemInserted(0);
             }
             mPollHandler.postDelayed(mPollWordAdd, INTERVAL_CHECK_WORD_CHANGE);
         }
