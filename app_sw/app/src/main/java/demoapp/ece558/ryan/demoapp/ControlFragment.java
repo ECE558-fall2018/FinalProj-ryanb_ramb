@@ -172,6 +172,9 @@ public class ControlFragment extends Fragment {
 
         // get the converted word from the speech activity intent
         mWordFromSpeech = getDecodedSpeech(resultCode, data);
+        
+        //Repeat the word that was spoken earlier
+        textToSpeech.speak("I think I heard" +mWordFromSpeech,TextToSpeech.QUEUE_FLUSH,null,null);
 
         // create new word
         Word newWord = new Word(mWordFromSpeech);
