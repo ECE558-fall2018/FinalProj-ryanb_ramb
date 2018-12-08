@@ -1,51 +1,56 @@
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
+
 package demoapp.ece558.ryan.demoapp;
 
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.speech.RecognizerIntent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.UUID;
-
-
+/** Activity handles the dynamic fragment management of the main navigation of the app
+ *  Inserts the control fragment into the frame layout in the bottom half of the window and
+ *  alternates between the recyclerview fragment or word fragments. When the user selectes a word
+ *  from the recyclerview, the activity replaces the recyclerview fragment with the specific word
+ *  fragment.
+ */
 public class MainActivity extends AppCompatActivity implements WordListFragment.OnViewClickListener{
 
     private static final String TAG = "Main";
-    public static final String EXTRA_WORD_ID = "ece.558.final.project.word_id";
-    public static final int NUM_COLORS = 8;
-    public static final int NUM_ROWS = 10;
+    private WordManager mWordManager;
 
-
-    // RecyclerView Item Select
-    // word list fragment is notifying that a word was clicked so we can change the fragments
+    /** Method implements the callback function for the RecyclerView selection.
+     *  When the user selects a word this callback initiates the fragment replacement process.
+     * @param wordPosition the position of the word in the arraylist of words so that the new word
+     *                     fragment knows which word to get from the list.
+     */
     @Override
     public void onViewSelected (int wordPosition) {
+        // replace the fragment
         replaceFragment(wordPosition);
     }
 
-    // When the word list fragment is attached, we have to link the custom listener method from the
-    // fragment to the activity
+
+    /** Method handles the process of hooking up the callback for the OnClickListener
+     *  of the RecyclerView ViewHolders
+     * @param fragment the fragment that the onClickListener came from
+     */
     @Override
     public void onAttachFragment(Fragment fragment){
+        // check if the current fragment is the recyclerview fragment and replace it with a word fragment
         if (fragment instanceof WordListFragment) {
             WordListFragment wordListFragment = (WordListFragment) fragment;
             wordListFragment.setOnViewClickListener(this);
         }
     }
 
+    /** Method handles the onPause lifecycle method for the activity. When the activity is put into
+     *  the pause state, we need to make sure we save everything to the database.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -55,6 +60,11 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
         db.writeStateToDatabase();
     }
 
+
+    /** Method overrides the onCreate method for the activity. When the activity is created, we need
+     *  to start the fragment manager and create the fragments to put into the frame layouts.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +99,8 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
             }
        }
 
-        if(findViewById(R.id.landscape) != null) {
+       // landscape view for the activity so that we can build the fragments on device rotation
+       if(findViewById(R.id.landscape) != null) {
 
             // Start the fragment manager and begin the fragment transaction
             FragmentManager fmLand = this.getSupportFragmentManager();
@@ -115,14 +126,14 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
 
             }
         }
-
-
-
-
     }
 
-    // Method to abstract away the fragment replacement process when switching from the wordlist to
-    // a word fragment
+
+    /** Method handles the fragment replacement process when switching from the wordlist fragment
+     *  to a word fragment when a user selects a word from the recyclerview
+     * @param wordPosition the position of the word in the arraylist so that we know what word to
+     *                     build the fragment for.
+     */
     public void replaceFragment(int wordPosition){
         // access the fragment manager and begin transaction
         FragmentManager fm = getSupportFragmentManager();
@@ -139,11 +150,5 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
         ft.addToBackStack(null);
 
         ft.commit();
-    }
-    
-    @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
-        //finish();
     }
 }

@@ -1,99 +1,122 @@
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
+
 package demoapp.ece558.ryan.demoapp;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
-import android.util.Log;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
-import com.google.firebase.database.ValueEventListener;
-
-import java.lang.reflect.Array;
-import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import static java.lang.Math.toIntExact;
 
-
+/** Class handles the word management process. WordManager is a singleton class maintains the
+ *  list of known words locally on the app. Because it is a singleton, it creates a central location
+ *  where other classes and activities can access the word list. It creates a centralized location
+ *  to interact with the word list across all fragments and activities.
+ */
 public class WordManager {
 
     private static final String TAG = "WordManager";
     private static final String DB_FLAG = "db_flag_update";
-
-    private static WordManager sWordManager;
-    private Context mContext;
     private List<Word> mWordList;
-
+    private Word mCurrentWord;
     private String info[] = new String[4];
-
-    private DatabaseReference mDatabaseReference;
 
     // singleton constructor/manager
     private static final WordManager ourInstance = new WordManager();
 
-    // public constructor to return the instance of the class
+    /** Method implements the public constructor that returns the instance of the word singleton
+     *  to any calling object.
+     * @return the persistent instance of the word manager object
+     */
     public static WordManager getInstance() {
         return ourInstance;
     }
 
-    // private constructor
+    /** Method implements the private constructor for the WordManager. It instantiates the ArrayList
+     *  for the word list initially read from the database.
+     */
     private WordManager() {
         // create word list
         mWordList = new ArrayList<Word>();
 
-        // get the known words from the database
-        //createListenerForWordList();
-        //getWordListFromDatabase();
+        mCurrentWord = null;
     }
 
+
+    /** Method implements the process of setting the current word. Current word is tracked in the
+     *  word manager so that we can easily set and retrieve the current word when switching between
+     *  the recyclerview fragment and the word fragment.
+     *  @return the current word
+     */
+    public Word getCurrentWord(){
+        return mCurrentWord;
+    }
+
+
+    public void setCurrentWord(Word word){
+        // find the current word and set it as word
+        for (Word w: mWordList){
+            if(w.getWordText().equals(word.getWordText())) {
+                mCurrentWord = w;
+            }
+        }
+    }
+
+
+    /** Gets the text of the current word for the new word fragment when the fragment is being created.
+     * @return the text of the word
+     */
+    public String getCurrentWordText() {
+        if (mCurrentWord == null)
+            return null;
+        return mCurrentWord.getWordText();
+    }
+
+
+    /** Method sets the wordlist retrieved from the database as the current wordlist in the word manager.
+     * @param wordList the wordlist read in from the database
+     */
     public void setWordListFromDatabase(List<Word> wordList){
-        // set flag in database to trigger the word manager to read the database and get the word list
-        //mDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        //mDatabaseReference.child(DB_FLAG).setValue("update");
         mWordList = wordList;
     }
 
-    // On start-up, get the word list from the database
-    private void createListenerForWordList() {
-        DatabaseManager db = new DatabaseManager();
-        mWordList = db.getWordList();
-        Log.d(TAG, "WordList received from database");
-    }
 
-
+    /** Method saves the current word and word color information when the user presses the back button
+     *  from the word fragment
+     * @param newWord the word/color information of the current word fragment
+     */
     public void updateWord(Word newWord) {
-        Word oldWord = getWord(newWord.getWord());
+        Word oldWord = getWord(newWord.getWordText());
 
         mWordList.remove(oldWord);
         mWordList.add(newWord);
     }
 
 
-    public void addWord (int index, String word) {
-        Word newWord = new Word(word);
-        mWordList.add(index, newWord);
-    }
-
-    public void addWord (int index, Word word){
-        mWordList.add(index, word);
-    }
-
+    /** Method allows calling functions to add new words to the word list.
+     * @param newWord the new word to add to the database.
+     */
     public void addWord (Word newWord) {
         mWordList.add(0, newWord);
     }
 
 
-    // return the list of words
+    /** Method returns the wordlist to database manager when it needs to get the current wordlist
+     *  and write it to the database.
+     * @return
+     */
     public List<Word> getWordList() {
         return mWordList;
     }
 
+
+    /** Returns the UUID of the word object selected by the recyclerview so the new word fragment
+     *  can make sure it gets the correct word information to display.
+     * @param id the word ID Of the word requested
+     * @return the word with the specific word id
+     */
     public Word getWord(UUID id){
         for(Word word : mWordList) {
             if(word.getId().equals(id))
@@ -102,27 +125,26 @@ public class WordManager {
         return null;
     }
 
+
+    /** Method returns the word based on the array list position.
+     * @param pos the array list position of the word requested
+     * @return the word at that position
+     */
     public Word getWord(int pos){
         return mWordList.get(pos);
     }
 
+
+    /** Method returns the word based on the word text
+     *
+     * @param word
+     * @return
+     */
     private Word getWord(String word){
         for(Word w : mWordList){
-            if (w.getWord() == word)
+            if (w.getWordText() == word)
                 return w;
         }
         return null;
-    }
-
-    public int getPos(UUID id) {
-        return mWordList.indexOf(getWord(id));
-    }
-
-    public void setInfo(String[] info) {
-        this.info = info;
-    }
-
-    public String[] getInfo() {
-        return info;
     }
 }

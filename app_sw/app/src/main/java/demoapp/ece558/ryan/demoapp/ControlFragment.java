@@ -1,11 +1,11 @@
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
+
 package demoapp.ece558.ryan.demoapp;
 
-import android.app.Activity;
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -18,70 +18,69 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.Toast;
-
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 
+/** Class implements the fragment that displays the control buttons for the Speech-To-Text input
+ *  and the PlayShow image buttons.
+ */
 public class ControlFragment extends Fragment {
 
+    private static final String TAG = "Control Fragment";
     private static final int REQ_CODE_SPEECH_INPUT = 1;
     private DatabaseManager mDataBaseManager;
     private String mWordFromSpeech;
     private TextToSpeech textToSpeech;
     private FragmentActivity mActivity;
-    private DatabaseReference databaseReference;
+    private WordManager mWordManager;
+    private String mCurrentWord;
 
+
+    /** Method handles the fragment creation process.
+     *  Initial set up of class members and sets the listener for the image buttons
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = getActivity();
-        databaseReference = FirebaseDatabase.getInstance().getReference();
 
         mDataBaseManager = new DatabaseManager();
 
         textToSpeech = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-
-                if(status == TextToSpeech.SUCCESS)
-                {
+                if(status == TextToSpeech.SUCCESS) {
                     int result = textToSpeech.setLanguage(Locale.ENGLISH);
 
                     if(result==TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED)
-                    {
                         Toast.makeText(getContext(),"This Language is not supported",Toast.LENGTH_SHORT).show();
-                    }
-
-                    else
-                    {
-                        //imageButton.setEnabled(true);
+                    else {
                         textToSpeech.setPitch(0.8f);
                         textToSpeech.setSpeechRate(0.9f);
                         speak();
                     }
-
                 }
             }
         });
-
-
     }
 
-    private void speak()
-    {
-        //String text = editText.getText().toString();
+
+    /** Method handles the speaking process of the text-to-speech
+     */
+    private void speak() {
         textToSpeech.speak(mWordFromSpeech,TextToSpeech.QUEUE_FLUSH,null,null);
     }
 
 
-
-
+    /** Method overrides the process of inflating and creating the fragment widgets
+     * @param inflater the layout inflater to use to inflate the fragment widgets
+     * @param container the viewgroup of the view to inflate
+     * @param savedInstanceState bundle of saved values the fragment accesses on startup
+     * @return the view that was inflated by the inflater
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_control, container, false);
@@ -91,13 +90,23 @@ public class ControlFragment extends Fragment {
         ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity(), "Play show", Toast.LENGTH_SHORT).show();
+                // check current word exists
+                mWordManager = WordManager.getInstance();
+                mCurrentWord = mWordManager.getCurrentWordText();
+                if (mCurrentWord == null) {
+                    Toast.makeText(getActivity(), "Choose A Word", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(getActivity(), "Play show", Toast.LENGTH_SHORT).show();
 
-                // update database play show flag with the word of the show to play
-                mDataBaseManager.signalPlayShow();
+                    // update database play show flag with the word of the show to play
+                    mDataBaseManager.writeStateToDatabase();
+                    mDataBaseManager.signalPlayShow(mCurrentWord);
+                }
             }
         });
 
+        // create the image button for the speech-to-text and set the listener
         ib = (ImageButton) view.findViewById(R.id.button_record_text);
         ib.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,7 +119,9 @@ public class ControlFragment extends Fragment {
     }
 
 
-    // Begin the speech-to-text process
+    /** Method handles the process of starting the speech-to-text input activity
+     *  Start the activity and check for errors.
+     */
     public void promptSpeechInput() {
         try {
             startActivityForResult(setIntentData(), REQ_CODE_SPEECH_INPUT);
@@ -120,7 +131,10 @@ public class ControlFragment extends Fragment {
         }
     }
 
-    // Create the intent for the speech to text
+
+    /** Method builds the intent to start the speech-to-text activity
+     * @return the intent for the speech-to-text activity
+     */
     public Intent setIntentData () {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -129,7 +143,12 @@ public class ControlFragment extends Fragment {
         return intent;
     }
 
-    // Get the String of the decoded speech from text-to-speech
+
+    /** Method handles the retrieval of the text string from the speech-to-text activity
+     * @param resultCode the result of the activity from speech-to-text
+     * @param data the intent returned from the activity
+     * @return the string of the decoded speech-to-text
+     */
     public String getDecodedSpeech(int resultCode, Intent data) {
 
         if (resultCode == RESULT_OK && data != null){
@@ -140,6 +159,13 @@ public class ControlFragment extends Fragment {
             return null;
     }
 
+
+    /** Method handles the Speech-To-Text result whem the activity handling the speech-to-text
+     *  returns with the word in string form
+     * @param requestCode the request that was made to the activity
+     * @param resultCode the result status returned from the activity
+     * @param data the intent that has the resulting word from the speech-to-text conversion
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -147,38 +173,18 @@ public class ControlFragment extends Fragment {
         // get the converted word from the speech activity intent
         mWordFromSpeech = getDecodedSpeech(resultCode, data);
 
-        //textToSpeech.speak("I think I heard"+mWordFromSpeech,TextToSpeech.QUEUE_FLUSH,null,null);
-
         // create new word
         Word newWord = new Word(mWordFromSpeech);
 
         // add the word to the word manager wordlist
-        //WordManager mWordManager = new WordManager();//WordManager.getInstance();
-
-       // Log.d("WORDS","WORDS"+mWordManager.getWordList());
-        //mWordManager.addWord(newWord);
+        mWordManager = WordManager.getInstance();
+        mWordManager.addWord(newWord);
 
         // Add word to database
-        databaseReference = FirebaseDatabase.getInstance().getReference().child("words");
-        //databaseReference.push().setValue(mWordFromSpeech);
-        // add color child entry
-        //databaseReference = FirebaseDatabase.getInstance().getReference().child("words").child(mWordFromSpeech);
-        //databaseReference.push().setValue("colors");
-
         DatabaseManager db = new DatabaseManager();
         db.addWordToDataBase();
 
         // store the word in the view model to update the recycler view fragment
         Log.d("Before","Getactivity");
-        WordViewModel model = ViewModelProviders.of(mActivity).get(WordViewModel.class);
-        model.setWordFromText(mWordFromSpeech);
     }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-    }
-
-
 }

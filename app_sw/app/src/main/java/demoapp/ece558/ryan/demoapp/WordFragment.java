@@ -1,3 +1,8 @@
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
+
 package demoapp.ece558.ryan.demoapp;
 
 import android.graphics.Color;
@@ -16,6 +21,9 @@ import com.google.firebase.database.DatabaseReference;
 
 import static android.content.ContentValues.TAG;
 
+/** Class implements the fragment that handles the word specifc process of selecting the colors and
+ *  recording the show data for the word.
+ */
 public class WordFragment extends Fragment {
 
     private static final int numColors = 8;
@@ -32,18 +40,11 @@ public class WordFragment extends Fragment {
 
     public static final String WORD_INDEX = "ece.558.projec4.word_index";
 
-    private WordManager mWordManager;   // singleton that manages the known words
-    private Word mCurrentWord;                 // currently selected word
-    private int mRedVal;
-    private int mGreenVal;
-    private int mBlueVal;
+    private WordManager mWordManager;       // singleton that manages the known words
+    private Word mCurrentWord;              // currently selected word
     private View mSelectedColorBox;
     private int mSelectedBoxIndex;
-
-    private DatabaseReference databaseReference;
-
     private int mWordPosition;
-
     private int mRedProgress;
     private int mGreenProgress;
     private int mBlueProgress;
@@ -55,47 +56,21 @@ public class WordFragment extends Fragment {
     OnTouchListener mColorListeners [];
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-
-        // save the data that we need to restore if activity was destroyed due to device rotation
-        savedInstanceState.putString(KEY_WORD_SAVE, mCurrentWord.getWord());
-        savedInstanceState.putInt(KEY_COLOR_1, mWordManager.getWord(mWordPosition).getColor(0));
-        savedInstanceState.putInt(KEY_COLOR_2, mWordManager.getWord(mWordPosition).getColor(1));
-        savedInstanceState.putInt(KEY_COLOR_3, mWordManager.getWord(mWordPosition).getColor(2));
-        savedInstanceState.putInt(KEY_COLOR_4, mWordManager.getWord(mWordPosition).getColor(3));
-        savedInstanceState.putInt(KEY_COLOR_5, mWordManager.getWord(mWordPosition).getColor(4));
-        savedInstanceState.putInt(KEY_COLOR_6, mWordManager.getWord(mWordPosition).getColor(5));
-        savedInstanceState.putInt(KEY_COLOR_7, mWordManager.getWord(mWordPosition).getColor(6));
-        savedInstanceState.putInt(KEY_COLOR_8, mWordManager.getWord(mWordPosition).getColor(7));
-    }
-
-
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mColorListeners = new OnTouchListener[numColors];
 
-        // check if we need to reset values due to device rotation
-        if (savedInstanceState != null) {
-            int temp = savedInstanceState.getInt(KEY_COLOR_1);
-        }
-        else {
-            Log.d(TAG, "No saved stuff.");
-        }
-
-        //mWordManager = WordManager.getInstance();
-
-
-
-        setRetainInstance(true);
-        //UUID wordID = (UUID) getActivity().getIntent().getSerializableExtra(EXTRA_WORD_ID);
-        //mCurrentWord = mWordManager.getWord(wordID);
     }
 
-
+    /** Method implements the fragment onCreateView process. Inflate the view and initialize the
+     *  fragment widgets. Instantiate the word manager and get the current word to display.
+     *
+     * @param inflater the inflater used to inflate the fragment view
+     * @param container the viewgroup for the fragment layout
+     * @param savedInstanceState
+     * @return the inflated view of the fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_word, container, false);
@@ -104,14 +79,15 @@ public class WordFragment extends Fragment {
         Bundle args = getArguments();
         if (args != null){
             mWordPosition = args.getInt(WORD_INDEX, 0);
-            int temp = savedInstanceState.getInt(KEY_COLOR_1);
         }
 
+        // get the current word always on new fragment when we rotate or start for the first time
         mWordManager = WordManager.getInstance();
-        mCurrentWord = mWordManager.getWord(mWordPosition);
+        mCurrentWord = mWordManager.getCurrentWord();
+
         // Set the word text at the top of the screen
         TextView tv = view.findViewById(R.id.label_word);
-        tv.setText(mCurrentWord.getWord());
+        tv.setText(mWordManager.getCurrentWordText());
 
         // Do initial setup of color box colors from stored values
         setColorBoxes(view);
@@ -250,6 +226,7 @@ public class WordFragment extends Fragment {
 
                 // save the data to the word
                 mCurrentWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
+                mWordManager.updateWord(mCurrentWord);
             }
         });
     }
@@ -280,6 +257,7 @@ public class WordFragment extends Fragment {
 
                 // save the data to the word
                 mCurrentWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
+                mWordManager.updateWord(mCurrentWord);
             }
         });
     }
@@ -311,7 +289,7 @@ public class WordFragment extends Fragment {
 
                 // save the data to the word
                 mCurrentWord.setColor(mSelectedBoxIndex, convertRgbToInt(mRedProgress, mGreenProgress, mBlueProgress));
-
+                mWordManager.updateWord(mCurrentWord);
                 // notify the database
                 //mDatabaseRef.child(PWM_BLUE).setValue(mBlueProgress);
                 //Update the database
