@@ -1,7 +1,8 @@
-/** Ryan Bentz and Ram Bhattarai
- *  ECE 558
- *  Project 4
- */
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
+
 package a558.ece.ryan.project4_hw;
 
 import android.util.Log;

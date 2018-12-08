@@ -1,9 +1,19 @@
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
+
 package a558.ece.ryan.project4_hw;
 
 import android.os.Handler;
 
 import com.google.android.things.pio.PeripheralManager;
 
+
+/** Class implements the high level driver for controlling the TLC5940. Class takes the RGB color data
+ *  and converts the data into the byte stream that will ultimately be sent to the TLC5940 via the
+ *  Arduino.
+ */
 public class Tlc5940 {
 
     // TLC5940 Defines
@@ -57,6 +67,9 @@ public class Tlc5940 {
         mWriteHandler.post(writeDataOut);
     }
 
+    /** Runnable that handles the process of sending the byte stream data out to the Arduino in
+     *  in periodic bursts.
+     */
     private Runnable writeDataOut = new Runnable() {
         @Override
         public void run() {
@@ -82,6 +95,10 @@ public class Tlc5940 {
     };
 
 
+    /** Method implements the overall algorithm for taking the 8-bit RGB values, converting them to
+     *  12-bit PWM values, building the channel data, and converting that into a byte stream
+     * @param color
+     */
     public void updateColorDisplay(int color []) {
 
         // convert 8-bit color values to 12-bit PWM values
@@ -108,9 +125,11 @@ public class Tlc5940 {
     public int convertTo12bit(int convert) { return convert * 16; }
 
 
-    //Convert (16) 12-bit scaled Gray Scale color values to (24) byte stream for shifting
-    // out (2) 12-bit numbers to (3) 8-bit bytes
-    // in the data
+    /** Method converts (16) 12-bit scaled Gray Scale color values to (24) byte stream for shifting
+     *  out (2) 12-bit numbers to (3) 8-bit bytes in the data
+     * @param PWM the 12-bit PWM data
+     * @param data the 8-bit byte stream data
+     */
     public void convert_gsData(byte [] PWM, int [] data)
     {
         int j = 0;
@@ -141,6 +160,10 @@ public class Tlc5940 {
     }
 
 
+    /** Method implements the building of the channel data based on the RGB values received
+     * @param data the 12-bit PWM data
+     * @param color the color to build in the channel
+     */
     private void build_channel_data(int data[], int color)
     {
         for(int i = 0; i < NUM_CHANNELS; ++i)
@@ -148,6 +171,4 @@ public class Tlc5940 {
             data[i] = color;
         }
     }
-
-
 }

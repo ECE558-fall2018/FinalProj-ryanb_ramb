@@ -1,7 +1,10 @@
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
+
 package a558.ece.ryan.project4_hw;
 
-
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -16,6 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+/** Class handles the database management including the reading and writing to the database
+ *  on behalf of calling functions.
+ */
 public class DatabaseManager {
     private static final String DB_FLAG = "db_flag_update";
     private static final String TAG = "DatabaseManager";
@@ -37,7 +44,7 @@ public class DatabaseManager {
         // find the word
         for (Word w : mWordList) {
             // get the color data
-            if (w.getWord().equals(word)){
+            if (w.getWordText().equals(word)){
                 for (int i = 0; i < 8; ++i)
                     colorData[i] = w.getColor(i);
             }
@@ -122,7 +129,7 @@ public class DatabaseManager {
             colorMap.put("colors", colorList);
 
             // hashmap.put(key, value) for each word
-            wordMap.put(w.getWord(), colorMap);
+            wordMap.put(w.getWordText(), colorMap);
             ++count;
         }
 
@@ -163,7 +170,7 @@ public class DatabaseManager {
             colorMap.put("colors", colorList);
 
             // hashmap.put(key, value) for each word
-            wordMap.put(w.getWord(), colorMap);
+            wordMap.put(w.getWordText(), colorMap);
             ++wordCount;
         }
 

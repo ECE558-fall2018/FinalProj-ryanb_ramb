@@ -1,17 +1,15 @@
+// Ryan Bentz and Ram Bhattaria
+// ECE 558
+// Final Project
+// 12-06-18
 
-/** Ryan Bentz and Ram Bhattarai
- *  ECE 558
- *  Project 3
- */
 package a558.ece.ryan.project4_hw;
 
 import android.util.Log;
-
 import com.google.android.things.pio.I2cDevice;
 import com.google.android.things.pio.PeripheralManager;
-
 import java.io.IOException;
-import java.util.List;
+
 
 /** Manager to handle the interface with the I2C peripheral
  *
